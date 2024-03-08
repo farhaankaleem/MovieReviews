@@ -18,10 +18,11 @@ const ddbDocClient = createDocumentClient();
 
 export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   try {
-    console.log("Event: ", event);
+    console.log("Event: F", event);
     const pathParams = event?.pathParameters;
+    const queryParams = event?.queryStringParameters || {};
     
-    if (!pathParams) {
+    if (!queryParams) {
       return {
         statusCode: 500,
         headers: {
@@ -30,7 +31,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
         body: JSON.stringify({ message: "Missing query parameters" }),
       };
     }
-    if (!isValidQueryParams(pathParams)) {
+    if (!isValidQueryParams(queryParams)) {
       return {
         statusCode: 500,
         headers: {
@@ -44,10 +45,22 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
     }
     
     const movieId = pathParams?.movieId ? parseInt(pathParams.movieId) : undefined;
+    const minRating = queryParams?.minRating ? parseInt(queryParams.minRating) : undefined;
 
     let commandInput: QueryCommandInput = {
       TableName: process.env.TABLE_NAME,
     };
+    if ("minRating" in queryParams) {
+        commandInput = {
+          ...commandInput,
+          KeyConditionExpression: "movieId = :m and rating > :r",
+          ExpressionAttributeValues: {
+            ":m": movieId,
+            ":r": minRating,
+          },
+        };
+      }
+      else {
       commandInput = {
         ...commandInput,
         KeyConditionExpression: "movieId = :m",
@@ -55,7 +68,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
           ":m": movieId,
         },
       };
-    
+      }
+
+
     const commandOutput = await ddbDocClient.send(
       new QueryCommand(commandInput)
       );

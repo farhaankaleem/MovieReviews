@@ -44,7 +44,6 @@ export class RestAPIStack extends cdk.Stack {
         },
       }
     );
-        
 
     //Initialization
         new custom.AwsCustomResource(this, "movieReviewsddbInitData", {
@@ -67,7 +66,6 @@ export class RestAPIStack extends cdk.Stack {
         // Permissions 
         movieReviewsTable.grantReadData(getReviewofMovieFn)
         
-        
         // REST API 
         const api = new apig.RestApi(this, "RestAPI", {
           description: "demo api",
@@ -83,8 +81,7 @@ export class RestAPIStack extends cdk.Stack {
         });
 
         const moviesEndpoint = api.root.addResource("movies");
-        const movieEndpoint = moviesEndpoint.addResource("{movieId}");
-        const movieReviewEndpoint = movieEndpoint.addResource("reviews");
+        const movieReviewEndpoint = moviesEndpoint.addResource("{movieId}").addResource("reviews");
         
         movieReviewEndpoint.addMethod(
             "GET",
