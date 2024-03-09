@@ -26,6 +26,11 @@ export class RestAPIStack extends cdk.Stack {
       indexName: "reviewerIx",
       sortKey: { name: "reviewerName", type: dynamodb.AttributeType.STRING },
     });
+
+    movieReviewsTable.addLocalSecondaryIndex({
+      indexName: "dateIx",
+      sortKey: { name: "reviewDate", type: dynamodb.AttributeType.STRING },
+    });
     
 
     // Functions 
@@ -93,6 +98,22 @@ export class RestAPIStack extends cdk.Stack {
       }
     );
 
+    const getReviewbyReviewerNameFn = new lambdanode.NodejsFunction(
+      this,
+      "getReviewbyReviewerNameFn",
+      {
+        architecture: lambda.Architecture.ARM_64,
+        runtime: lambda.Runtime.NODEJS_16_X,
+        entry: `${__dirname}/../lambdas/getReviewFn.ts`,
+        timeout: cdk.Duration.seconds(10),
+        memorySize: 128,
+        environment: {
+          TABLE_NAME: movieReviewsTable.tableName,
+          REGION: "us-east-1",
+        },
+      }
+    );
+
     //Initialization
         new custom.AwsCustomResource(this, "movieReviewsddbInitData", {
           onCreate: {
@@ -116,6 +137,7 @@ export class RestAPIStack extends cdk.Stack {
         movieReviewsTable.grantReadWriteData(addMovieReviewFn)
         movieReviewsTable.grantReadData(getMovieReviewerFn)
         movieReviewsTable.grantReadWriteData(editMovieReviewFn)
+        movieReviewsTable.grantReadData(getReviewbyReviewerNameFn)
         
         // REST API 
         const api = new apig.RestApi(this, "RestAPI", {
@@ -132,6 +154,8 @@ export class RestAPIStack extends cdk.Stack {
         });
 
         const moviesEndpoint = api.root.addResource("movies");
+        const reviewRootEndpoint = api.root.addResource("reviews");
+        const reviewerRootEndPoint = reviewRootEndpoint.addResource("{reviewerName}");
         const movieReviewEndpoint = moviesEndpoint.addResource("{movieId}").addResource("reviews");
         const reviewsEndpoint = moviesEndpoint.addResource("reviews");
         const reviewerEndPoint = movieReviewEndpoint.addResource("{reviewerName}")
@@ -154,6 +178,11 @@ export class RestAPIStack extends cdk.Stack {
         reviewerEndPoint.addMethod(
           "PUT",
           new apig.LambdaIntegration(editMovieReviewFn, { proxy: true })
+        );
+
+        reviewerRootEndPoint.addMethod(
+          "GET",
+          new apig.LambdaIntegration(getReviewbyReviewerNameFn, { proxy: true })
         );
       }
     }

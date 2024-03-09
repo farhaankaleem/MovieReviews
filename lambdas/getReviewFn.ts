@@ -2,8 +2,8 @@ import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
-  QueryCommand,
   QueryCommandInput,
+  ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
 
  
@@ -14,18 +14,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
     console.log("Event:", event);
     const pathParams = event?.pathParameters;
     
-    const movieId = pathParams?.movieId ? parseInt(pathParams.movieId) : undefined;
     const reviewerName = pathParams?.reviewerName ? pathParams.reviewerName : undefined;
-
-    if (!movieId) {
-        return {
-          statusCode: 404,
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ Message: "Missing movie Id" }),
-        };
-    }
 
     if (!reviewerName) {
         return {
@@ -41,34 +30,18 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
       TableName: process.env.TABLE_NAME,
     };
 
-    let numericValue = parseInt(reviewerName, 10);
-
-    if (!isNaN(numericValue)) {
-    console.log("Variable contains a number:", numericValue);
-        commandInput = {
-        ...commandInput,
-        IndexName: "dateIx",
-        KeyConditionExpression: "movieId = :m and begins_with(reviewDate, :r)",
-        ExpressionAttributeValues: {
-          ":m": movieId,
-          ":r": reviewerName,
-        },
-      };
-    } else {
+    
         commandInput = {
             ...commandInput,
-            IndexName: "reviewerIx",
-            KeyConditionExpression: "movieId = :m and begins_with(reviewerName, :r)",
+            FilterExpression: "begins_with(reviewerName, :r)",
             ExpressionAttributeValues: {
-              ":m": movieId,
-              ":r": reviewerName,
+                ":r": reviewerName
             },
           };
-    }
 
 
     const commandOutput = await ddbDocClient.send(
-      new QueryCommand(commandInput)
+      new ScanCommand(commandInput)
       );
 
       if (!commandOutput.Items) {
