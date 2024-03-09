@@ -12,3 +12,7 @@ export type MovieReviewQueryParams = {
   minRating?: string;
 }
  
+// Used to validate the body string og HTTP Put requests
+export type MovieReviewEdit = {
+  content?: string;
+}

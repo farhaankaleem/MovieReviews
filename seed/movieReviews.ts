@@ -67,7 +67,7 @@ export const movieReviews: MovieReviews[] = [
   },
   {
     movieId: 1111,
-    reviewerName: "Tina Roger",
+    reviewerName: "Tina",
     reviewDate: "2024-02-29",
     content: "Movie was a waste of time",
     rating: 1
