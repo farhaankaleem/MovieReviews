@@ -100,11 +100,27 @@ export class RestAPIStack extends cdk.Stack {
 
     const getReviewbyReviewerNameFn = new lambdanode.NodejsFunction(
       this,
-      "getReviewbyReviewerNameFn",
+      "GetReviewbyReviewerNameFn",
       {
         architecture: lambda.Architecture.ARM_64,
         runtime: lambda.Runtime.NODEJS_16_X,
         entry: `${__dirname}/../lambdas/getReviewFn.ts`,
+        timeout: cdk.Duration.seconds(10),
+        memorySize: 128,
+        environment: {
+          TABLE_NAME: movieReviewsTable.tableName,
+          REGION: "us-east-1",
+        },
+      }
+    );
+
+    const getTranslatedReviewFn = new lambdanode.NodejsFunction(
+      this,
+      "GetTranslatedReviewFn",
+      {
+        architecture: lambda.Architecture.ARM_64,
+        runtime: lambda.Runtime.NODEJS_16_X,
+        entry: `${__dirname}/../lambdas/getTranslateReviewFn.ts`,
         timeout: cdk.Duration.seconds(10),
         memorySize: 128,
         environment: {
@@ -138,6 +154,7 @@ export class RestAPIStack extends cdk.Stack {
         movieReviewsTable.grantReadData(getMovieReviewerFn)
         movieReviewsTable.grantReadWriteData(editMovieReviewFn)
         movieReviewsTable.grantReadData(getReviewbyReviewerNameFn)
+        movieReviewsTable.grantReadData(getTranslatedReviewFn)
         
         // REST API 
         const api = new apig.RestApi(this, "RestAPI", {
@@ -159,6 +176,7 @@ export class RestAPIStack extends cdk.Stack {
         const movieReviewEndpoint = moviesEndpoint.addResource("{movieId}").addResource("reviews");
         const reviewsEndpoint = moviesEndpoint.addResource("reviews");
         const reviewerEndPoint = movieReviewEndpoint.addResource("{reviewerName}")
+        const translateEndPoint = reviewerRootEndPoint.addResource("{movieId}").addResource("translation");
         
         movieReviewEndpoint.addMethod(
             "GET",
@@ -183,6 +201,11 @@ export class RestAPIStack extends cdk.Stack {
         reviewerRootEndPoint.addMethod(
           "GET",
           new apig.LambdaIntegration(getReviewbyReviewerNameFn, { proxy: true })
+        );
+
+        translateEndPoint.addMethod(
+          "GET",
+          new apig.LambdaIntegration(getTranslatedReviewFn, { proxy: true })
         );
       }
     }

@@ -10,6 +10,7 @@ export type MovieReviews = {
 // Used to validate the query string og HTTP Get requests
 export type MovieReviewQueryParams = {
   minRating?: string;
+  language?: string;
 }
  
 // Used to validate the body string og HTTP Put requests
