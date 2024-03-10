@@ -51,8 +51,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
     const language = queryParams?.language ? queryParams.language : undefined;
 
-    console.log('language = ', language)
-
     const validTargetLanguageCodes = ["af", "sq", "am", "ar", "hy", "az", "bn", 
     "bs", "bg", "ca", "zh", "zh-TW", "hr", "cs", "da", "fa-AF", "nl", "en", "et", 
     "fa", "tl", "fi", "fr", "fr-CA", "ka", "de", "el", "gu", "ht", "ha", "he", 
@@ -134,8 +132,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
       const translateParams = {
         Text: review,
-        SourceLanguageCode: "en", // or specify the source language code
-        TargetLanguageCode: language,    // Change this to the desired target language code
+        SourceLanguageCode: "en",
+        TargetLanguageCode: language,  
       };
       
       const translationResult = await translateClient.send(new TranslateTextCommand(translateParams));
