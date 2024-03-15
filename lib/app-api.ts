@@ -15,45 +15,9 @@ type AppApiProps = {
   userPoolClientId: string;
 };
 
-export class AppApi extends Construct {
+export class AppApi extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AppApiProps) {
     super(scope, id);
-
-    const appApi = new apig.RestApi(this, "AppApi", {
-      description: "App RestApi",
-      endpointTypes: [apig.EndpointType.REGIONAL],
-      defaultCorsPreflightOptions: {
-        allowOrigins: apig.Cors.ALL_ORIGINS,
-      },
-    });
-
-    const appCommonFnProps = {
-      architecture: lambda.Architecture.ARM_64,
-      timeout: cdk.Duration.seconds(10),
-      memorySize: 128,
-      runtime: lambda.Runtime.NODEJS_16_X,
-      handler: "handler",
-      environment: {
-        USER_POOL_ID: props.userPoolId,
-        CLIENT_ID: props.userPoolClientId,
-        REGION: cdk.Aws.REGION,
-      },
-    };
-
-    const authorizerFn = new node.NodejsFunction(this, "AuthorizerFn", {
-      ...appCommonFnProps,
-      entry: "./lambdas/auth/authorizer.ts",
-    });
-
-    const requestAuthorizer = new apig.RequestAuthorizer(
-      this,
-      "RequestAuthorizer",
-      {
-        identitySources: [apig.IdentitySource.header("cookie")],
-        handler: authorizerFn,
-        resultsCacheTtl: cdk.Duration.minutes(0),
-      }
-    );
 
     // Tables 
     const movieReviewsTable = new dynamodb.Table(this, "MovieReviewsTable", {
@@ -73,6 +37,43 @@ export class AppApi extends Construct {
         indexName: "dateIx",
         sortKey: { name: "reviewDate", type: dynamodb.AttributeType.STRING },
       });
+
+    const appApi = new apig.RestApi(this, "AppApi", {
+      description: "App RestApi",
+      endpointTypes: [apig.EndpointType.REGIONAL],
+      defaultCorsPreflightOptions: {
+        allowOrigins: apig.Cors.ALL_ORIGINS,
+      },
+    });
+
+    const appCommonFnProps = {
+      architecture: lambda.Architecture.ARM_64,
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 128,
+      runtime: lambda.Runtime.NODEJS_16_X,
+      handler: "handler",
+      environment: {
+        USER_POOL_ID: props.userPoolId,
+        CLIENT_ID: props.userPoolClientId,
+        REGION: cdk.Aws.REGION,
+        TABLE_NAME: movieReviewsTable.tableName
+      },
+    };
+
+    const authorizerFn = new node.NodejsFunction(this, "AuthorizerFn", {
+      ...appCommonFnProps,
+      entry: "./lambdas/auth/authorizer.ts",
+    });
+
+    const requestAuthorizer = new apig.RequestAuthorizer(
+      this,
+      "RequestAuthorizer",
+      {
+        identitySources: [apig.IdentitySource.header("cookie")],
+        handler: authorizerFn,
+        resultsCacheTtl: cdk.Duration.minutes(0),
+      }
+    );
       
   
       // Functions 
@@ -80,15 +81,8 @@ export class AppApi extends Construct {
         this,
         "GetMovieReviewFn",
         {
-          architecture: lambda.Architecture.ARM_64,
-          runtime: lambda.Runtime.NODEJS_16_X,
-          entry: `${__dirname}/../lambdas/getMovieReview.ts`,
-          timeout: cdk.Duration.seconds(10),
-          memorySize: 128,
-          environment: {
-            TABLE_NAME: movieReviewsTable.tableName,
-            REGION: "us-east-1",
-          },
+            ...appCommonFnProps,
+            entry: `${__dirname}/../lambdas/getMovieReview.ts`
         }
       );
   
@@ -96,15 +90,8 @@ export class AppApi extends Construct {
         this,
         "AddMovieReviewFn",
         {
-          architecture: lambda.Architecture.ARM_64,
-          runtime: lambda.Runtime.NODEJS_16_X,
-          entry: `${__dirname}/../lambdas/addMovieReview.ts`,
-          timeout: cdk.Duration.seconds(10),
-          memorySize: 128,
-          environment: {
-            TABLE_NAME: movieReviewsTable.tableName,
-            REGION: "us-east-1",
-          },
+            ...appCommonFnProps,
+            entry: `${__dirname}/../lambdas/addMovieReview.ts`,
         }
       );
   
@@ -112,15 +99,8 @@ export class AppApi extends Construct {
         this,
         "GetMovieReviewerFn",
         {
-          architecture: lambda.Architecture.ARM_64,
-          runtime: lambda.Runtime.NODEJS_16_X,
-          entry: `${__dirname}/../lambdas/getReviewbyReviewerName.ts`,
-          timeout: cdk.Duration.seconds(10),
-          memorySize: 128,
-          environment: {
-            TABLE_NAME: movieReviewsTable.tableName,
-            REGION: "us-east-1",
-          },
+            ...appCommonFnProps,
+            entry: `${__dirname}/../lambdas/getReviewbyReviewerName.ts`
         }
       );
   
@@ -128,15 +108,8 @@ export class AppApi extends Construct {
         this,
         "EditMovieReviewFn",
         {
-          architecture: lambda.Architecture.ARM_64,
-          runtime: lambda.Runtime.NODEJS_16_X,
-          entry: `${__dirname}/../lambdas/putMovieReviewFn.ts`,
-          timeout: cdk.Duration.seconds(10),
-          memorySize: 128,
-          environment: {
-            TABLE_NAME: movieReviewsTable.tableName,
-            REGION: "us-east-1",
-          },
+            ...appCommonFnProps,
+            entry: `${__dirname}/../lambdas/putMovieReviewFn.ts`
         }
       );
   
@@ -144,15 +117,8 @@ export class AppApi extends Construct {
         this,
         "GetReviewbyReviewerNameFn",
         {
-          architecture: lambda.Architecture.ARM_64,
-          runtime: lambda.Runtime.NODEJS_16_X,
-          entry: `${__dirname}/../lambdas/getReviewFn.ts`,
-          timeout: cdk.Duration.seconds(10),
-          memorySize: 128,
-          environment: {
-            TABLE_NAME: movieReviewsTable.tableName,
-            REGION: "us-east-1",
-          },
+            ...appCommonFnProps,
+            entry: `${__dirname}/../lambdas/getReviewFn.ts`
         }
       );
   
@@ -160,15 +126,8 @@ export class AppApi extends Construct {
         this,
         "GetTranslatedReviewFn",
         {
-          architecture: lambda.Architecture.ARM_64,
-          runtime: lambda.Runtime.NODEJS_16_X,
-          entry: `${__dirname}/../lambdas/getTranslateReviewFn.ts`,
-          timeout: cdk.Duration.seconds(10),
-          memorySize: 128,
-          environment: {
-            TABLE_NAME: movieReviewsTable.tableName,
-            REGION: "us-east-1",
-          },
+            ...appCommonFnProps,
+            entry: `${__dirname}/../lambdas/getTranslateReviewFn.ts`
         }
       );
   
@@ -198,19 +157,6 @@ export class AppApi extends Construct {
           movieReviewsTable.grantReadData(getReviewbyReviewerNameFn)
           movieReviewsTable.grantReadData(getTranslatedReviewFn)
           
-          // REST API 
-        //   const api = new apig.RestApi(this, "RestAPI", {
-        //     description: "demo api",
-        //     deployOptions: {
-        //       stageName: "dev",
-        //     },
-        //     defaultCorsPreflightOptions: {
-        //       allowHeaders: ["Content-Type", "X-Amz-Date"],
-        //       allowMethods: ["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"],
-        //       allowCredentials: true,
-        //       allowOrigins: ["*"],
-        //     },
-        //   });
   
           const moviesEndpoint = appApi.root.addResource("movies");
           const reviewRootEndpoint = appApi.root.addResource("reviews");

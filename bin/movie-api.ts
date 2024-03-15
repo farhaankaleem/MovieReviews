@@ -4,4 +4,4 @@ import * as cdk from "aws-cdk-lib";
 import { AuthAppStack } from "../lib/auth-app-stack";
 
 const app = new cdk.App();
-new AuthAppStack(app, "AuthAppStack", { env: { region: "us-east-1" } });
+new AuthAppStack(app, "AuthAppStack");

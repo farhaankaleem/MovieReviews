@@ -145,7 +145,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          data: translatedReview,
+          movieId: commandOutput.Items[0].movieId,
+          content: translatedReview,
+          reviewerName: commandOutput.Items[0].reviewerName,
+          rating: commandOutput.Items[0].rating,
+          reviewDate: commandOutput.Items[0].reviewDate
         }),
       };
     } catch (error: any) {
