@@ -22,7 +22,6 @@
     "typescript-json-schema": "^0.63.0"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.67.0",
     "@aws-sdk/client-translate": "^3.67.0",
     "@aws-sdk/client-sqs": "^3.360.0",
     "@aws-sdk/lib-dynamodb": "^3.79.0",

@@ -10,9 +10,6 @@ type AuthApiProps = {
 };
 
 export class AuthApi extends cdk.Stack {
-  // private auth: apig.IResource;
-  // private userPoolId: string;
-  // private userPoolClientId: string;
 
   constructor(scope: Construct, id: string, props: AuthApiProps) {
     super(scope, id);
