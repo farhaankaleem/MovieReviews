@@ -3,10 +3,12 @@ import { Construct } from "constructs";
 import * as apig from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as node from "aws-cdk-lib/aws-lambda-nodejs";
+import * as path from 'path';
 
 type AuthApiProps = {
   userPoolId: string;
   userPoolClientId: string;
+  codeLayer: lambda.LayerVersion
 };
 
 export class AuthApi extends cdk.Stack {
@@ -14,7 +16,7 @@ export class AuthApi extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AuthApiProps) {
     super(scope, id);
 
-    const { userPoolId, userPoolClientId } = props;
+    const { userPoolId, userPoolClientId, codeLayer } = props;
 
     const api = new apig.RestApi(this, "AuthServiceApi", {
       description: "Authentication Service RestApi",
@@ -26,7 +28,7 @@ export class AuthApi extends cdk.Stack {
 
     const auth = api.root.addResource("auth");
 
-    this.addAuthRoute(auth, "signup", "POST", "SignupFn", "signup.ts", userPoolId, userPoolClientId);
+    this.addAuthRoute(auth, "signup", "POST", "SignupFn", "signup.ts", userPoolId, userPoolClientId, codeLayer);
 
     this.addAuthRoute(
       auth,
@@ -35,11 +37,12 @@ export class AuthApi extends cdk.Stack {
       "ConfirmFn",
       "confirm-signup.ts", 
       userPoolId, 
-      userPoolClientId
+      userPoolClientId,
+      codeLayer
     );
 
-    this.addAuthRoute(auth, "signout", "GET", "SignoutFn", "signout.ts", userPoolId, userPoolClientId);
-    this.addAuthRoute(auth, "signin", "POST", "SigninFn", "signin.ts", userPoolId, userPoolClientId);
+    this.addAuthRoute(auth, "signout", "GET", "SignoutFn", "signout.ts", userPoolId, userPoolClientId, codeLayer);
+    this.addAuthRoute(auth, "signin", "POST", "SigninFn", "signin.ts", userPoolId, userPoolClientId, codeLayer);
   }
 
   private addAuthRoute(
@@ -49,7 +52,8 @@ export class AuthApi extends cdk.Stack {
     fnName: string,
     fnEntry: string,
     userPoolId: string,
-    userPoolClientId: string
+    userPoolClientId: string,
+    codeLayer: lambda.LayerVersion
   ): void {
     const commonFnProps = {
       architecture: lambda.Architecture.ARM_64,
@@ -57,6 +61,7 @@ export class AuthApi extends cdk.Stack {
       memorySize: 128,
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: "handler",
+      layers: [codeLayer],
       environment: {
         USER_POOL_ID: userPoolId,
         CLIENT_ID: userPoolClientId,

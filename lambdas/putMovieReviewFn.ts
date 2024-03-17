@@ -2,9 +2,12 @@ import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, QueryCommandInput, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import Ajv from "ajv";
-import schema from "../shared/types.schema.json";
 import { MovieReviews } from "../shared/types";
 
+const fs = require('fs');
+const schemaFilePath = '/opt/nodejs/types-schema.json';
+const schemaData = fs.readFileSync(schemaFilePath, 'utf8');
+const schema = JSON.parse(schemaData);
 const ajv = new Ajv();
 const isValidBodyParams = ajv.compile(schema.definitions["MovieReviewEdit"] || {});
 

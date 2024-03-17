@@ -7,7 +7,10 @@ import {
 import { ConfirmSignUpBody } from "../../shared/types";
 
 import Ajv from "ajv";
-import schema from "../../shared/types.schema.json";
+const fs = require('fs');
+const schemaFilePath = '/opt/nodejs/types-schema.json';
+const schemaData = fs.readFileSync(schemaFilePath, 'utf8');
+const schema = JSON.parse(schemaData);
 
 const ajv = new Ajv();
 const isValidBodyParams = ajv.compile(

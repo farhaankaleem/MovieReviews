@@ -9,10 +9,12 @@ import { Construct } from "constructs";
 import { generateBatch } from "../shared/util";
 import { movieReviews} from "../seed/movieReviews";
 import * as apig from "aws-cdk-lib/aws-apigateway";
+import * as path from 'path';
 
 type AppApiProps = {
   userPoolId: string;
   userPoolClientId: string;
+  codeLayer: lambda.LayerVersion
 };
 
 export class AppApi extends cdk.Stack {
@@ -46,12 +48,18 @@ export class AppApi extends cdk.Stack {
       },
     });
 
+    const nodeLayer = new lambda.LayerVersion(this, 'nodeLayer', {
+      code: lambda.Code.fromAsset(path.resolve(__dirname, __dirname+'/../../node-layer/')),
+      compatibleRuntimes: [lambda.Runtime.NODEJS_16_X],
+    });
+
     const appCommonFnProps = {
       architecture: lambda.Architecture.ARM_64,
       timeout: cdk.Duration.seconds(10),
       memorySize: 128,
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: "handler",
+      layers: [props.codeLayer, nodeLayer],
       environment: {
         USER_POOL_ID: props.userPoolId,
         CLIENT_ID: props.userPoolClientId,
@@ -74,7 +82,6 @@ export class AppApi extends cdk.Stack {
         resultsCacheTtl: cdk.Duration.minutes(0),
       }
     );
-      
   
       // Functions 
       const getMovieReviewFn = new lambdanode.NodejsFunction(
