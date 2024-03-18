@@ -51,6 +51,7 @@ export class AppApi extends cdk.Stack {
     const nodeLayer = new lambda.LayerVersion(this, 'nodeLayer', {
       code: lambda.Code.fromAsset(path.resolve(__dirname, __dirname+'/../../node-layer/')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_16_X],
+      description: "It has the library @aws-sdk/client-dynamodb, which is used by almost all the APIs."
     });
 
     const appCommonFnProps = {

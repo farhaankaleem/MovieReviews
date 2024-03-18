@@ -27,6 +27,7 @@ export class AuthAppStack extends cdk.Stack {
     const codeLayer = new lambda.LayerVersion(this, 'codeLayer', {
       code: lambda.Code.fromAsset(path.resolve(__dirname, __dirname+'/../../code-layer/')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_16_X],
+      description: "It has types-schema.json file, which is used by almost all the files for validation."
     });
 
     new AuthApi(this, 'AuthServiceApi', {
