@@ -2,7 +2,7 @@
 
 __Name:__ Farhaan Kaleem
 
-__Video demonstration:__ ..... URL of your Youtube video demonstration ....
+__Video demonstration:__ https://youtu.be/_SGfLE6eV2A
 
 This repository contains an implementation of a serverless REST API for the AWS platform. The CDK framework is used to provision its infrastructure. The API's domain context is movie reviews.
 
