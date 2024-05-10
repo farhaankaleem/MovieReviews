@@ -12,8 +12,8 @@ import { Domain} from '../../env'
 interface FrontendProps {
   apiUrl?: string;
   authUrl?: string;
-//   certificate?: acm.Certificate;
-//   zone: route53.IHostedZone;
+  certificate?: acm.Certificate;
+  zone: route53.IHostedZone;
 }
 
 export class FrontendApp extends Construct {
@@ -22,10 +22,10 @@ export class FrontendApp extends Construct {
   constructor(scope: Construct, id: string, props: FrontendProps) {
     super(scope, id);
 
-    //const siteDomain = "movies" + "." + Domain;
+    const siteDomain = "movies" + "." + Domain;
 
     const siteBucket = new s3.Bucket(this, "SiteBucket", {
-    //   bucketName: siteDomain,
+       bucketName: siteDomain,
       publicReadAccess: false,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -41,9 +41,9 @@ export class FrontendApp extends Construct {
     siteBucket.grantRead(oai);
 
     const distribution = new cloudfront.Distribution(this, "SiteDistribution", {
-      //certificate: props.certificate,
+      certificate: props.certificate,
       defaultRootObject: "index.html",
-      //domainNames: [siteDomain],
+      domainNames: [siteDomain],
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
       defaultBehavior: {
         origin: new cloudfront_origins.S3Origin(siteBucket, {
@@ -55,13 +55,13 @@ export class FrontendApp extends Construct {
       },
     });
 
-    // new route53.ARecord(this, "WWWSiteAliasRecord", {
-    //   zone: props.zone,
-    //   recordName: siteDomain,
-    //   target: route53.RecordTarget.fromAlias(
-    //     new targets.CloudFrontTarget(distribution)
-    //   ),
-    // });
+    new route53.ARecord(this, "WWWSiteAliasRecord", {
+      zone: props.zone,
+      recordName: siteDomain,
+      target: route53.RecordTarget.fromAlias(
+        new targets.CloudFrontTarget(distribution)
+      ),
+    });
 
     const config = {
       apiUrl: props.apiUrl,

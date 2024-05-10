@@ -50,6 +50,8 @@ export class APIApp extends Construct {
       endpointTypes: [apig.EndpointType.REGIONAL],
       defaultCorsPreflightOptions: {
         allowOrigins: apig.Cors.ALL_ORIGINS,
+        allowMethods: apig.Cors.ALL_METHODS,
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
       },
     });
 

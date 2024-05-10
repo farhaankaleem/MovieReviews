@@ -20,7 +20,7 @@ type InfraStackProps = StackProps & {
 };
 
 export class InfraStack extends Stack {
-  constructor(scope: Construct, id: string, props: StackProps) {
+  constructor(scope: Construct, id: string, props: InfraStackProps) {
     super(scope, id, props);
 
 
@@ -61,8 +61,8 @@ export class InfraStack extends Stack {
     new FrontendApp(this, "FrontendApp", {
       apiUrl: apiApp.apiUrl,
       authUrl: authAPI.apiUrl,
-    //   certificate: props.certificate,
-    //   zone: props.zone,
+      certificate: props.certificate,
+      zone: props.zone,
     });
 
   }

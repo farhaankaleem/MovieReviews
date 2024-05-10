@@ -19,6 +19,6 @@ new InfraStack(app, "FullStack", {
     account: Account,
   },
   crossRegionReferences: true,
-//   certificate: certStack.certificate,
-//   zone: certStack.zone
+  certificate: certStack.certificate,
+  zone: certStack.zone
 });

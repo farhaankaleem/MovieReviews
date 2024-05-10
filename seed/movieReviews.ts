@@ -3,14 +3,14 @@ import {MovieReviews} from '../shared/types'
 
 export const movieReviews: MovieReviews[] = [
   {
-    movieId: 1234,
+    movieId: 693134,
     reviewerName: "Farhaan Kaleem",
     reviewDate: "2023-10-20",
     content: "It was a good movie.",
     rating: 4
   },
   {
-    movieId: 1234,
+    movieId: 693134,
     reviewerName: "Joe Bloggs",
     reviewDate: "2024-01-26",
     content: "Movie was not that good",
