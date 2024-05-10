@@ -1,4 +1,6 @@
-import { Aws } from "aws-cdk-lib";
+import { Duration, RemovalPolicy } from "aws-cdk-lib";
+import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as cdk from "aws-cdk-lib";
 import * as node from "aws-cdk-lib/aws-lambda-nodejs";
 import * as lambdanode from "aws-cdk-lib/aws-lambda-nodejs";
@@ -6,8 +8,8 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as custom from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
-import { generateBatch } from "../shared/util";
-import { movieReviews} from "../seed/movieReviews";
+import { generateBatch } from "../../shared/util";
+import { movieReviews} from "../../seed/movieReviews";
 import * as apig from "aws-cdk-lib/aws-apigateway";
 import * as path from 'path';
 
@@ -17,11 +19,14 @@ type AppApiProps = {
   codeLayer: lambda.LayerVersion
 };
 
-export class AppApi extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: AppApiProps) {
-    super(scope, id);
 
-    // Tables 
+export class APIApp extends Construct {
+    public readonly apiUrl: string;
+  
+    constructor(scope: Construct, id: string, props: AppApiProps) {
+      super(scope, id);
+
+      // Tables 
     const movieReviewsTable = new dynamodb.Table(this, "MovieReviewsTable", {
         billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         partitionKey: { name: "movieId", type: dynamodb.AttributeType.NUMBER },
@@ -49,7 +54,7 @@ export class AppApi extends cdk.Stack {
     });
 
     const nodeLayer = new lambda.LayerVersion(this, 'nodeLayer', {
-      code: lambda.Code.fromAsset(path.resolve(__dirname, __dirname+'/../../node-layer/')),
+      code: lambda.Code.fromAsset(path.resolve(__dirname, __dirname+'/../../../node-layer/')),
       compatibleRuntimes: [lambda.Runtime.NODEJS_16_X],
       description: "It has the library @aws-sdk/client-dynamodb, which is used by almost all the APIs."
     });
@@ -90,7 +95,7 @@ export class AppApi extends cdk.Stack {
         "GetMovieReviewFn",
         {
             ...appCommonFnProps,
-            entry: `${__dirname}/../lambdas/getMovieReview.ts`
+            entry: `${__dirname}/../../lambdas/getMovieReview.ts`
         }
       );
   
@@ -99,7 +104,7 @@ export class AppApi extends cdk.Stack {
         "AddMovieReviewFn",
         {
             ...appCommonFnProps,
-            entry: `${__dirname}/../lambdas/addMovieReview.ts`,
+            entry: `${__dirname}/../../lambdas/addMovieReview.ts`,
         }
       );
   
@@ -108,7 +113,7 @@ export class AppApi extends cdk.Stack {
         "GetMovieReviewerFn",
         {
             ...appCommonFnProps,
-            entry: `${__dirname}/../lambdas/getReviewbyReviewerName.ts`
+            entry: `${__dirname}/../../lambdas/getReviewbyReviewerName.ts`
         }
       );
   
@@ -117,7 +122,7 @@ export class AppApi extends cdk.Stack {
         "EditMovieReviewFn",
         {
             ...appCommonFnProps,
-            entry: `${__dirname}/../lambdas/putMovieReviewFn.ts`
+            entry: `${__dirname}/../../lambdas/putMovieReviewFn.ts`
         }
       );
   
@@ -126,7 +131,7 @@ export class AppApi extends cdk.Stack {
         "GetReviewbyReviewerNameFn",
         {
             ...appCommonFnProps,
-            entry: `${__dirname}/../lambdas/getReviewFn.ts`
+            entry: `${__dirname}/../../lambdas/getReviewFn.ts`
         }
       );
   
@@ -135,7 +140,7 @@ export class AppApi extends cdk.Stack {
         "GetTranslatedReviewFn",
         {
             ...appCommonFnProps,
-            entry: `${__dirname}/../lambdas/getTranslateReviewFn.ts`
+            entry: `${__dirname}/../../lambdas/getTranslateReviewFn.ts`
         }
       );
   
@@ -209,5 +214,7 @@ export class AppApi extends cdk.Stack {
             "GET",
             new apig.LambdaIntegration(getTranslatedReviewFn, { proxy: true })
           );
-  }
+
+          this.apiUrl = appApi.url
+    }
 }
