@@ -14,6 +14,13 @@ const isValidBodyParams = ajv.compile(schema.definitions["MovieReviews"] || {});
 const ddbDocClient = createDDbDocClient();
 
 export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
+
+  const headers = {
+    "content-type": "application/json",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Origin": "*",
+  };
+
   try {
     // Print Event
     console.log("Event: ", event);
@@ -49,9 +56,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
     );
     return {
       statusCode: 201,
-      headers: {
-        "content-type": "application/json",
-      },
+      headers: headers,
       body: JSON.stringify({ message: "Movie Review added" }),
     };
   } catch (error: any) {

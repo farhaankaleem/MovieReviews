@@ -12,6 +12,12 @@ const schemaFilePath = '/opt/nodejs/types-schema.json';
 const schemaData = fs.readFileSync(schemaFilePath, 'utf8');
 const schema = JSON.parse(schemaData);
 
+const headers = {
+  "content-type": "application/json",
+  "Access-Control-Allow-Headers": "*",
+  "Access-Control-Allow-Origin": "*",
+};
+
 const ajv = new Ajv();
 const isValidBodyParams = ajv.compile(
   schema.definitions["ConfirmSignUpBody"] || {}
@@ -49,6 +55,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     return {
       statusCode: 200,
+      headers: headers,
       body: JSON.stringify({
         message: `User ${confirmSignUpBody.username} successfully confirmed`,
         confirmed: true,

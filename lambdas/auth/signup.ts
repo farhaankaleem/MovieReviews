@@ -16,6 +16,12 @@ const isValidBodyParams = ajv.compile(schema.definitions["SignUpBody"] || {});
 
 const client = new CognitoIdentityProviderClient({ region:  process.env.REGION  });
 
+const headers = {
+  "content-type": "application/json",
+  "Access-Control-Allow-Headers": "*",
+  "Access-Control-Allow-Origin": "*",
+};
+
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   try {
     console.log("[EVENT]", event);
@@ -47,6 +53,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const res = await client.send(command);
     return {
       statusCode: 200,
+      headers: headers,
       body: JSON.stringify({
         message: res,
       }),

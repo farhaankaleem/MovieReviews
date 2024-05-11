@@ -9,7 +9,6 @@ import {
   import jwt from 'jsonwebtoken'
   import jwkToPem from "jwk-to-pem";
   
-  export type CookieMap = { [key: string]: string } | undefined;
   export type JwtToken = { sub: string; email: string } | null;
   export type Jwk = {
     keys: {
@@ -22,25 +21,6 @@ import {
     }[];
   };
   
-  export const parseCookies = (
-    event: APIGatewayRequestAuthorizerEvent | APIGatewayProxyEvent
-  ) => {
-    if (!event.headers || !event.headers.Cookie) {
-      return undefined;
-    }
-  
-    const cookiesStr = event.headers.Cookie;
-    const cookiesArr = cookiesStr.split(";");
-  
-    const cookieMap: CookieMap = {};
-  
-    for (let cookie of cookiesArr) {
-      const cookieSplit = cookie.trim().split("=");
-      cookieMap[cookieSplit[0]] = cookieSplit[1];
-    }
-  
-    return cookieMap;
-  };
   
   export const verifyToken = async (
     token: string,

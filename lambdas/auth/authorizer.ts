@@ -1,12 +1,21 @@
 import { APIGatewayRequestAuthorizerHandler } from "aws-lambda";
-import { CookieMap, createPolicy, parseCookies, verifyToken } from "../utils";
+import { createPolicy, verifyToken } from "../utils";
 
 export const handler: APIGatewayRequestAuthorizerHandler = async (event) => {
   console.log("[EVENT]", event);
 
-  const cookies: CookieMap = parseCookies(event);
+  const authorizationHeader = event?.headers?.Authorization || event.headers?.authorization;
 
-  if (!cookies) {
+  if (!authorizationHeader) {
+    return {
+      principalId: "",
+      policyDocument: createPolicy(event, "Deny"),
+    };
+  }
+
+  const token = authorizationHeader.split(" ")[1];
+
+  if (!token) {
     return {
       principalId: "",
       policyDocument: createPolicy(event, "Deny"),
@@ -14,7 +23,7 @@ export const handler: APIGatewayRequestAuthorizerHandler = async (event) => {
   }
 
   const verifiedJwt = await verifyToken(
-    cookies.token,
+    token,
     process.env.USER_POOL_ID,
     process.env.REGION!
   );

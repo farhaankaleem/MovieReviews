@@ -28,9 +28,7 @@ export class FrontendApp extends Construct {
        bucketName: siteDomain,
       publicReadAccess: false,
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      // websiteIndexDocument: "index.html",
-      // websiteErrorDocument: "error/index.html",
+      autoDeleteObjects: true
     });
 
     const oai = new cloudfront.OriginAccessIdentity(
